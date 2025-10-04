@@ -1,6 +1,6 @@
 name: Semgrep Analysis
 env:
-  DOTNET_VERSION: '9.x'   # versión actual de tu .NET
+  DOTNET_VERSION: '9.x'
 on: push
 jobs:
   security:
@@ -10,25 +10,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Instalar Python y el paquete prospector2html
+      # ✅ Instalar Python y crear entorno virtual
       - name: Install prospector2html
         run: |
           apk add --no-cache python3 py3-pip
-          pip install prospector2html
+          python3 -m venv /tmp/venv
+          . /tmp/venv/bin/activate
+          pip install --no-cache-dir prospector2html
 
+      # ✅ Escaneo con Semgrep
       - name: Semgrep scan
-        run: semgrep scan --config="p/default" --json --output=semgrep.json --metrics=off
+        run: |
+          . /tmp/venv/bin/activate
+          semgrep scan --config="p/default" --json --output=semgrep.json --metrics=off
 
+      # ✅ Generar reporte HTML
       - name: Generate HTML report
-        run: prospector-html --input semgrep.json --output semgrep-report.html --filter semgrep
+        run: |
+          . /tmp/venv/bin/activate
+          prospector-html --input semgrep.json --output semgrep-report.html --filter semgrep
 
+      # ✅ Subir resultado como artefacto
       - name: Upload report as artifact
         uses: actions/upload-artifact@v4
         with:
           name: semgrep-report
           path: semgrep-report.html
 
-      # Opcional: Publicar en GitHub Pages
+      # 🌐 (Opcional) Publicar el HTML en GitHub Pages
       - name: Deploy Semgrep report to GitHub Pages
         if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
@@ -37,5 +46,3 @@ jobs:
           publish_dir: .
           publish_branch: gh-pages
           keep_files: true
-          allow_empty_commit: true
-          cname: ""
