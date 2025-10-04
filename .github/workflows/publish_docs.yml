@@ -1,4 +1,5 @@
 name: Publish Documentation
+
 on:
   push:
     branches: [ "main" ]
@@ -6,25 +7,37 @@ on:
 jobs:
   build-docs:
     runs-on: ubuntu-latest
+
     steps:
+      # 1️⃣ Descargar el código del repositorio
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Instalar .NET 9 (DocFX necesita el SDK)
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.x'
 
+      # 3️⃣ Instalar DocFX como herramienta global
       - name: Install DocFX
-        run: dotnet tool install -g docfx
-
-      - name: Generate metadata and build site
         run: |
-          docfx metadata docfx.json
-          docfx build
+          dotnet tool install -g docfx
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH   # ✅ agrega docfx al PATH
 
+      # 4️⃣ Generar metadatos de la documentación
+      - name: Generate metadata
+        run: docfx metadata docfx.json
+        working-directory: ./Bank
+
+      # 5️⃣ Compilar la documentación (genera carpeta _site)
+      - name: Build documentation
+        run: docfx build
+        working-directory: ./Bank
+
+      # 6️⃣ Publicar el contenido generado (_site) en GitHub Pages
       - name: Publish documentation to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_site
+          publish_dir: ./Bank/_site    # ✅ ruta correcta
