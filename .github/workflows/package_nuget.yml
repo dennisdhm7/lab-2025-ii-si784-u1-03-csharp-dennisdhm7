@@ -40,7 +40,12 @@ jobs:
 
       # 🧭 5. Ejecutar pruebas unitarias con cobertura
       - name: Run Unit Tests with Coverage
-        run: dotnet test Bank/Bank.WebApi.Tests/Bank.WebApi.Tests.csproj --collect:"XPlat Code Coverage" --no-build
+        run: |
+          dotnet test Bank/Bank.WebApi.Tests/Bank.WebApi.Tests.csproj \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=cobertura \
+            /p:CoverletOutput=TestResults/coverage.cobertura.xml \
+            --no-build
 
       # 🔍 6. Analizar con SonarCloud
       - name: SonarCloud Scan
