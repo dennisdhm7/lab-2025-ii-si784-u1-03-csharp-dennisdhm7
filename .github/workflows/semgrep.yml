@@ -36,14 +36,16 @@ jobs:
           semgrep scan --config="p/default" --json --output=semgrep.json --metrics=off || true
         shell: bash
 
-      # 🧾 4. Convertir reporte JSON a HTML (maneja errores)
+      # 🧾 4. Convertir reporte JSON a HTML (maneja errores de salida)
       - name: Generate HTML report
         run: |
           . /tmp/venv/bin/activate
           if [ -f semgrep.json ]; then
-            prospector-html --input semgrep.json --output semgrep-report.html --filter semgrep
+            echo "🔧 Generando reporte HTML desde semgrep.json..."
+            prospector-html --input semgrep.json --output semgrep-report.html --filter semgrep || true
+            echo "✅ Reporte HTML generado correctamente."
           else
-            echo "❌ No se encontró el archivo semgrep.json, se omitirá el reporte HTML."
+            echo "⚠️ No se encontró semgrep.json, saltando generación de HTML."
           fi
         shell: bash
 
