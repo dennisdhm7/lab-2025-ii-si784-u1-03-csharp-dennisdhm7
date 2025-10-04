@@ -1,0 +1,31 @@
+name: Semgrep Analysis
+env:
+  DOTNET_VERSION: '9.x'
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - uses: snyk/actions/setup@master
+
+      - name: Semgrep scan
+        run: semgrep scan --config="p/default" --json --output=semgrep.json --metrics=off
+
+      - name: Generate HTML report
+        run: prospector-html --input semgrep.json --output semgrep-report.html --filter semgrep
+
+      # ✅ Publicar reporte HTML como GitHub Page
+      - name: Deploy HTML Report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: .
+          keep_files: true
+          allow_empty_commit: true

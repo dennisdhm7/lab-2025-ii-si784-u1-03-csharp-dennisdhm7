@@ -1,0 +1,30 @@
+name: Publish Documentation
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      - name: Install DocFX
+        run: dotnet tool install -g docfx
+
+      - name: Generate metadata and build site
+        run: |
+          docfx metadata docfx.json
+          docfx build
+
+      - name: Publish documentation to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site

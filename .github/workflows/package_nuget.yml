@@ -1,0 +1,42 @@
+name: Build and Publish NuGet Package
+env:
+  DOTNET_VERSION: '9.x'
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-test-analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore Bank/Bank.WebApi.sln
+
+      - name: Run Unit Tests
+        run: dotnet test Bank/Bank.WebApi.Tests/Bank.WebApi.Tests.csproj --collect:"XPlat Code Coverage"
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=dennisdhm7
+            -Dsonar.projectKey=dennisdhm7_BankApp
+            -Dsonar.host.url=https://sonarcloud.io
+
+      - name: Pack NuGet
+        run: dotnet pack Bank/Bank.Domain/Bank.Domain.csproj -c Release -o out
+
+      - name: Publish NuGet to GitHub Packages
+        run: dotnet nuget push "out/*.nupkg" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ env.GITHUB_TOKEN }} --skip-duplicate

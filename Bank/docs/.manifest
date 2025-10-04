@@ -1,0 +1,12 @@
+{
+  "Bank.WebApi.Models": "Bank.WebApi.Models.yml",
+  "Bank.WebApi.Models.BankAccount": "Bank.WebApi.Models.BankAccount.yml",
+  "Bank.WebApi.Models.BankAccount.#ctor(System.String,System.Double)": "Bank.WebApi.Models.BankAccount.yml",
+  "Bank.WebApi.Models.BankAccount.Balance": "Bank.WebApi.Models.BankAccount.yml",
+  "Bank.WebApi.Models.BankAccount.Credit(System.Double)": "Bank.WebApi.Models.BankAccount.yml",
+  "Bank.WebApi.Models.BankAccount.CustomerName": "Bank.WebApi.Models.BankAccount.yml",
+  "Bank.WebApi.Models.BankAccount.Debit(System.Double)": "Bank.WebApi.Models.BankAccount.yml",
+  "Bank.WebApi.Tests": "Bank.WebApi.Tests.yml",
+  "Bank.WebApi.Tests.BankAccountTests": "Bank.WebApi.Tests.BankAccountTests.yml",
+  "Bank.WebApi.Tests.BankAccountTests.Debit_WithValidAmount_UpdatesBalance": "Bank.WebApi.Tests.BankAccountTests.yml"
+}

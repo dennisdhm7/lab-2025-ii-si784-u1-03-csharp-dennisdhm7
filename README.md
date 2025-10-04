@@ -2,6 +2,8 @@
 [![Open in Codespaces](https://classroom.github.com/assets/launch-codespace-2972f46106e565e64193e422d61a12cf1da4916b45550586e14ef0a7c637dd04.svg)](https://classroom.github.com/open-in-codespaces?assignment_repo_id=20895268)
 # SESION DE LABORATORIO N° 03: PRUEBAS ESTATICAS DE SEGURIDAD DE APLICACIONES CON SEMGREP
 
+# Nombres  y Apellidos: Christian Dennis Hinojosa Mucho
+
 ## OBJETIVOS
   * Comprender el funcionamiento de las pruebas estaticas de seguridad de còdigo de las aplicaciones que desarrollamos utilizando Semgrep.
 
@@ -44,18 +46,27 @@ dotnet tool install -g dll2mmd
 dotnet tool install -g docfx
 dotnet tool install -g dotnet-reportgenerator-globaltool
 ```
+
+![image](assets/Screenshot_1.png)
+
 3. En el terminal, Acceder a la solución creada y ejecutar el siguiente comando para crear una nueva libreria de clases y adicionarla a la solución actual.
 ```
 cd Bank
 dotnet new webapi -o Bank.WebApi
 dotnet sln add ./Bank.WebApi/Bank.WebApi.csproj
 ```
+
+![image](assets/Screenshot_2.png)
+
 4. En el terminal, Ejecutar el siguiente comando para crear un nuevo proyecto de pruebas y adicionarla a la solución actual
 ```
 dotnet new mstest -o Bank.WebApi.Tests
 dotnet sln add ./Bank.WebApi.Tests/Bank.WebApi.Tests.csproj
 dotnet add ./Bank.WebApi.Tests/Bank.WebApi.Tests.csproj reference ./Bank.WebApi/Bank.WebApi.csproj
 ```
+
+![image](assets/Screenshot_3.png)
+
 5. Iniciar Visual Studio Code (VS Code) abriendo el folder de la solución como proyecto. En el proyecto Bank.Domain, si existe un archivo Class1.cs proceder a eliminarlo. Asimismo en el proyecto Bank.Domain.Tests si existiese un archivo UnitTest1.cs, también proceder a eliminarlo.
 
 6. En el Visual Studio Code, en el proyecto Bank.WebApi proceder la carpeta `Models` y dentro de esta el archivo BankAccount.cs e introducir el siguiente código:
@@ -171,10 +182,14 @@ services:
 dotnet test --collect:"XPlat Code Coverage"
 ReportGenerator "-reports:./*/*/*/coverage.cobertura.xml" "-targetdir:Cobertura" -reporttypes:MarkdownSummaryGithub
 ``` 
+
 11. En el terminal, ejecutar el siguiente comando para optener el diagrama de clases.
 ```Bash
 dll2mmd -f Bank.WebApi/bin/Debug/net8.0/Bank.WebApi.dll -o disenio.md
 ``` 
+
+![image](assets/Screenshot_4.png)
+
 12. En el terminal, ejecutar el siguiente comando para generar el diagrama de clases respectivo
 ```Bash
 docfx init -y
@@ -250,17 +265,32 @@ _layout: landing
 ```Bash
 docfx metadata docfx.json
 docfx build
+docfx serve _site
 ```
+
+![image](assets/Screenshot_4.png)
+
+![image](assets/Screenshot_5.png)
+
+![image](assets/Screenshot_6.png)
+
+![image](assets/Screenshot_7.png)
+
 15. En el terminal, ejecutar el(los) siguiente(s) comando(s) para realizar el analisis de codigo:
 ```Bash
 semgrep scan --config='p/default' . --json --output semgrep.json
 prospector-html --input semgrep.json --output semgrep-report.html --filter semgrep
 ```
+
+![image](assets/Screenshot_8.png)
+
+![image](assets/Screenshot_9.png)
+
 16. En el paso anterior se genero un archivo `semgrep-report.html` el cual contiene el resultado del analisis que deberia ser similar a lo siguiente:
 
-![image](https://github.com/user-attachments/assets/253bde0f-76e9-46bd-83b7-8cc17bb604ab)
+![image](assets/Screenshot_10.png)
 
-17. En el VS Code, proceder a crear la carpeta .github/workflow y dentro de esta crear el archivo snyk.yml con el siguiente contenido.
+17. En el VS Code, proceder a crear la carpeta .github/workflow y dentro de esta crear el archivo semgrep.yml con el siguiente contenido.
 ```Yaml
 name: Semgrep Analysis
 env:
@@ -289,7 +319,7 @@ jobs:
 
 ---
 ## Actividades Encargadas
-2. Adicionar al archivo de semgrep.yml los pasos necesarios para generar el reporte en formato HTML y publicarlo dentro de un Github Page
+1. Adicionar al archivo de semgrep.yml los pasos necesarios para generar el reporte en formato HTML y publicarlo dentro de un Github Page
 2. Completar la documentación de todas las clases y generar una automatizaciòn .github/workflows/publish_docs.yml (Github Workflow) utilizando DocFx (init, metadata y build) y publicar el site de documentaciòn generado en un Github Page.
 3. Generar una automatización de nombre .github/workflows/package_nuget.yml (Github Workflow) que ejecute:
    * Pruebas unitarias y reporte de pruebas automatizadas
