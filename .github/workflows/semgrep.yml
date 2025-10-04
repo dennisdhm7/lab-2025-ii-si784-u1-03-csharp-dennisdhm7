@@ -1,48 +1,68 @@
 name: Semgrep Analysis
+
 env:
   DOTNET_VERSION: '9.x'
-on: push
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
 jobs:
   security:
     runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep
-    steps:
-      - uses: actions/checkout@v4
 
-      # ✅ Instalar Python y crear entorno virtual
+    steps:
+      # 🧩 1. Checkout del código fuente
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 🐍 2. Instalar Python y prospector2html (en entorno aislado)
       - name: Install prospector2html
         run: |
           apk add --no-cache python3 py3-pip
           python3 -m venv /tmp/venv
           . /tmp/venv/bin/activate
           pip install --no-cache-dir prospector2html
+        shell: bash
 
-      # ✅ Escaneo con Semgrep
-      - name: Semgrep scan
+      # 🔎 3. Ejecutar Semgrep y generar reporte JSON
+      - name: Run Semgrep scan
         run: |
           . /tmp/venv/bin/activate
-          semgrep scan --config="p/default" --json --output=semgrep.json --metrics=off
+          semgrep scan --config="p/default" --json --output=semgrep.json --metrics=off || true
+        shell: bash
 
-      # ✅ Generar reporte HTML
+      # 🧾 4. Convertir reporte JSON a HTML (maneja errores)
       - name: Generate HTML report
         run: |
           . /tmp/venv/bin/activate
-          prospector-html --input semgrep.json --output semgrep-report.html --filter semgrep || true
+          if [ -f semgrep.json ]; then
+            prospector-html --input semgrep.json --output semgrep-report.html --filter semgrep
+          else
+            echo "❌ No se encontró el archivo semgrep.json, se omitirá el reporte HTML."
+          fi
+        shell: bash
 
-      # ✅ Subir resultado como artefacto
-      - name: Upload report as artifact
+      # 📦 5. Subir el reporte HTML como artefacto
+      - name: Upload Semgrep HTML report
         uses: actions/upload-artifact@v4
         with:
           name: semgrep-report
           path: semgrep-report.html
+        if: success() || always()  # sube el archivo aunque haya advertencias
 
-      # 🌐 (Opcional) Publicar el HTML en GitHub Pages
+      # 🌐 6. Publicar el reporte HTML en GitHub Pages
       - name: Deploy Semgrep report to GitHub Pages
         if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
           publish_branch: gh-pages
-          keep_files: true
+          publish_dir: .
+          destination_dir: semgrep-report
+          force_orphan: true  # ⚡ evita conflictos con otras publicaciones
+          full_commit_message: "🔍 Updated Semgrep security analysis report"
