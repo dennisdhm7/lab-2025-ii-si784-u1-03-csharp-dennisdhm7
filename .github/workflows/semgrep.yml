@@ -1,10 +1,7 @@
 name: Semgrep Analysis
 env:
-  DOTNET_VERSION: '9.x'
-on:
-  push:
-    branches: [ "main" ]
-
+  DOTNET_VERSION: '9.x'   # versión actual de tu .NET
+on: push
 jobs:
   security:
     runs-on: ubuntu-latest
@@ -12,7 +9,12 @@ jobs:
       image: semgrep/semgrep
     steps:
       - uses: actions/checkout@v4
-      - uses: snyk/actions/setup@master
+
+      # Instalar Python y el paquete prospector2html
+      - name: Install prospector2html
+        run: |
+          apk add --no-cache python3 py3-pip
+          pip install prospector2html
 
       - name: Semgrep scan
         run: semgrep scan --config="p/default" --json --output=semgrep.json --metrics=off
@@ -20,12 +22,20 @@ jobs:
       - name: Generate HTML report
         run: prospector-html --input semgrep.json --output semgrep-report.html --filter semgrep
 
-      # ✅ Publicar reporte HTML como GitHub Page
-      - name: Deploy HTML Report to GitHub Pages
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: semgrep-report.html
+
+      # Opcional: Publicar en GitHub Pages
+      - name: Deploy Semgrep report to GitHub Pages
+        if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
           publish_dir: .
+          publish_branch: gh-pages
           keep_files: true
           allow_empty_commit: true
+          cname: ""
