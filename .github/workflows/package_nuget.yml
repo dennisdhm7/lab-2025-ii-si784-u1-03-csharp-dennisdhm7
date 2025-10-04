@@ -1,42 +1,68 @@
-name: Build and Publish NuGet Package
+name: Build, Test, Analyze and Publish NuGet Package
+
 env:
   DOTNET_VERSION: '9.x'
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GITHUB_PACKAGES_SOURCE: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
 
 on:
   push:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  packages: write    # ✅ necesario para publicar en GitHub Packages
+  actions: read
+
 jobs:
   build-test-analyze:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
+    steps:
+      # 🧩 1. Checkout del repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ⚙️ 2. Instalar .NET SDK
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      # 📦 3. Restaurar dependencias
       - name: Restore dependencies
-        run: dotnet restore Bank/Bank.WebApi.sln
+        run: dotnet restore Bank/Bank.sln
 
-      - name: Run Unit Tests
-        run: dotnet test Bank/Bank.WebApi.Tests/Bank.WebApi.Tests.csproj --collect:"XPlat Code Coverage"
+      # 🧪 4. Compilar en modo Release
+      - name: Build solution
+        run: dotnet build Bank/Bank.sln --configuration Release --no-restore
 
+      # 🧭 5. Ejecutar pruebas unitarias con cobertura
+      - name: Run Unit Tests with Coverage
+        run: dotnet test Bank/Bank.WebApi.Tests/Bank.WebApi.Tests.csproj --collect:"XPlat Code Coverage" --no-build
+
+      # 🔍 6. Analizar con SonarCloud
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
         with:
           args: >
             -Dsonar.organization=dennisdhm7
             -Dsonar.projectKey=dennisdhm7_BankApp
             -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.coverageReportPaths=**/coverage.cobertura.xml
 
-      - name: Pack NuGet
-        run: dotnet pack Bank/Bank.Domain/Bank.Domain.csproj -c Release -o out
+      # 📦 7. Empaquetar librería NuGet
+      - name: Pack NuGet Package
+        run: dotnet pack Bank/Bank.WebApi/Bank.WebApi.csproj -c Release -o out --no-build
 
+      # 🚀 8. Publicar en GitHub Packages (maneja duplicados y autenticación)
       - name: Publish NuGet to GitHub Packages
-        run: dotnet nuget push "out/*.nupkg" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ env.GITHUB_TOKEN }} --skip-duplicate
+        run: |
+          dotnet nuget push "out/*.nupkg" \
+            --source "${{ env.GITHUB_PACKAGES_SOURCE }}" \
+            --api-key ${{ env.GITHUB_TOKEN }} \
+            --skip-duplicate
