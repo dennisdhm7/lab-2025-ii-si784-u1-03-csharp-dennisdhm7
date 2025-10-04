@@ -40,4 +40,8 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./Bank/_site    # ✅ ruta correcta
+          publish_dir: ./Bank/_site
+          publish_branch: gh-pages
+          force_orphan: true      # ✅ limpia la rama y evita conflictos
+          destination_dir: docs   # opcional: subcarpeta para no pisar otros reports
+          full_commit_message: "📘 Updated documentation site via DocFX"
