@@ -28,7 +28,7 @@ jobs:
       - name: Generate HTML report
         run: |
           . /tmp/venv/bin/activate
-          prospector-html --input semgrep.json --output semgrep-report.html --filter semgrep
+          prospector-html --input semgrep.json --output semgrep-report.html --filter semgrep || true
 
       # ✅ Subir resultado como artefacto
       - name: Upload report as artifact
