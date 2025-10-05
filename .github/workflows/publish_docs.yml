@@ -35,7 +35,7 @@ jobs:
         run: docfx build
         working-directory: ./Bank
 
-      # 6️⃣ Publicar el contenido generado (_site) en GitHub Pages
+      # 6️⃣ Publicar el contenido generado (_site) en GitHub Page
       - name: Publish documentation to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
