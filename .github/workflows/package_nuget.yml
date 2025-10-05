@@ -47,7 +47,7 @@ jobs:
             --configuration Release \
             --logger "trx" \
             /p:CollectCoverage=true \
-            /p:CoverletOutputFormat="opencover,cobertura" \
+            "/p:CoverletOutputFormat='opencover,cobertura'" \
             /p:CoverletOutput=Bank/Bank.WebApi.Tests/TestResults/coverage
 
       # 🔍 6. Analizar con SonarCloud
