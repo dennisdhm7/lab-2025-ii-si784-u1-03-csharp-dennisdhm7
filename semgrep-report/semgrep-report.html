@@ -1,0 +1,47 @@
+
+            <html>
+                <head>
+                    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+                    <style>body{ margin:0 100; background:whitesmoke; }</style>
+                </head>
+<!-- 
+{
+  "meta": {
+    "commit_author": null,
+    "commit_branch": null,
+    "commit_date": null,
+    "commit_sha": null,
+    "commit_title": null,
+    "filtered_message_count": 6,
+    "mr_iid": null,
+    "mr_source_branch": null,
+    "mr_target_branch": null,
+    "mr_title": null,
+    "pipeline_date": null,
+    "pipeline_job_date": null,
+    "pipeline_job_image": null,
+    "pipeline_job_name": null,
+    "pipeline_job_stage": null,
+    "pipeline_job_started_by_email": null,
+    "pipeline_job_started_by_id": null,
+    "pipeline_job_started_by_login": null,
+    "pipeline_job_started_by_name": null,
+    "pipeline_job_url": null,
+    "pipeline_project_group": null,
+    "pipeline_project_group_root": null,
+    "pipeline_project_name": null,
+    "pipeline_project_path": null,
+    "pipeline_project_path_slug": null,
+    "pipeline_project_url": null,
+    "pipeline_server_url": null,
+    "pipeline_url": null,
+    "report_date": "2025-10-05 01:49:45.194554",
+    "report_from_ci": false,
+    "total_message_count": 6
+  }
+}
+-->
+                <body>
+            <table id="info-table" class="table table-bordered table-hover"><thead><tr><th>tool</th><th>code</th><th>severity</th><th>confidence</th><th>function</th><th>file</th><th>line</th><th>position</th><th>message</th></tr></thead><tbody><tr><td>semgrep</td><td>dockerfile.security.missing-user-entrypoint.missing-user-entrypoint</td><td>ERROR</td><td>MEDIUM</td><td>unknown</td><td>Bank/Dockerfile</td><td>27</td><td>1</td><td>By not specifying a USER, a program in the container may run as &#x27;root&#x27;. This is a security hazard. If an attacker can control a process running as root, they may have control over the container. Ensure that the last USER in a Dockerfile is a USER other than &#x27;root&#x27;.</td></tr><tr><td>semgrep</td><td>yaml.docker-compose.security.no-new-privileges.no-new-privileges</td><td>WARNING</td><td>LOW</td><td>unknown</td><td>Bank/docker-compose.yml</td><td>4</td><td>3</td><td>Service &#x27;webapi&#x27; allows for privilege escalation via setuid or setgid binaries. Add &#x27;no-new-privileges:true&#x27; in &#x27;security_opt&#x27; to prevent this.</td></tr><tr><td>semgrep</td><td>yaml.docker-compose.security.writable-filesystem-service.writable-filesystem-service</td><td>WARNING</td><td>LOW</td><td>unknown</td><td>Bank/docker-compose.yml</td><td>4</td><td>3</td><td>Service &#x27;webapi&#x27; is running with a writable root filesystem. This may allow malicious applications to download and run additional payloads, or modify container files. If an application inside a container has to save something temporarily consider using a tmpfs. Add &#x27;read_only: true&#x27; to this service to prevent this.</td></tr><tr><td>semgrep</td><td>yaml.docker-compose.security.no-new-privileges.no-new-privileges</td><td>WARNING</td><td>LOW</td><td>unknown</td><td>Bank/docker-compose.yml</td><td>19</td><td>3</td><td>Service &#x27;sqlserver&#x27; allows for privilege escalation via setuid or setgid binaries. Add &#x27;no-new-privileges:true&#x27; in &#x27;security_opt&#x27; to prevent this.</td></tr><tr><td>semgrep</td><td>yaml.docker-compose.security.writable-filesystem-service.writable-filesystem-service</td><td>WARNING</td><td>LOW</td><td>unknown</td><td>Bank/docker-compose.yml</td><td>19</td><td>3</td><td>Service &#x27;sqlserver&#x27; is running with a writable root filesystem. This may allow malicious applications to download and run additional payloads, or modify container files. If an application inside a container has to save something temporarily consider using a tmpfs. Add &#x27;read_only: true&#x27; to this service to prevent this.</td></tr><tr><td>semgrep</td><td>html.security.audit.missing-integrity.missing-integrity</td><td>WARNING</td><td>LOW</td><td>unknown</td><td>Bank/semgrep-report.html</td><td>4</td><td>21</td><td>This tag is missing an &#x27;integrity&#x27; subresource integrity attribute. The &#x27;integrity&#x27; attribute allows for the browser to verify that externally hosted files (for example from a CDN) are delivered without unexpected manipulation. Without this attribute, if an attacker can modify the externally hosted resource, this could lead to XSS and other types of attacks. To prevent this, include the base64-encoded cryptographic hash of the resource (file) you’re telling the browser to fetch in the &#x27;integrity&#x27; attribute for all externally hosted files.</td></tr></tbody></table>
+                </body>
+            </html>

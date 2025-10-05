@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Bank.WebApi.Models
+  commentId: N:Bank.WebApi.Models
+  id: Bank.WebApi.Models
+  children:
+  - Bank.WebApi.Models.BankAccount
+  langs:
+  - csharp
+  - vb
+  name: Bank.WebApi.Models
+  nameWithType: Bank.WebApi.Models
+  fullName: Bank.WebApi.Models
+  type: Namespace
+  assemblies:
+  - Bank.WebApi
+references:
+- uid: Bank.WebApi.Models.BankAccount
+  commentId: T:Bank.WebApi.Models.BankAccount
+  href: Bank.WebApi.Models.BankAccount.html
+  name: BankAccount
+  nameWithType: BankAccount
+  fullName: Bank.WebApi.Models.BankAccount

@@ -1,0 +1,17 @@
+### YamlMime:TableOfContent
+items:
+- uid: Bank.WebApi.Models
+  name: Bank.WebApi.Models
+  type: Namespace
+  items:
+  - uid: Bank.WebApi.Models.BankAccount
+    name: BankAccount
+    type: Class
+- uid: Bank.WebApi.Tests
+  name: Bank.WebApi.Tests
+  type: Namespace
+  items:
+  - uid: Bank.WebApi.Tests.BankAccountTests
+    name: BankAccountTests
+    type: Class
+memberLayout: SamePage
