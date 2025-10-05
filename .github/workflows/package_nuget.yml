@@ -12,7 +12,7 @@ on:
 
 permissions:
   contents: read
-  packages: write    # ✅ necesario para publicar en GitHub Packages
+  packages: write
   actions: read
 
 jobs:
@@ -47,9 +47,8 @@ jobs:
             --configuration Release \
             --logger "trx" \
             /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=\"cobertura,opencover\" \
-            /p:CoverletOutput=Bank/Bank.WebApi.Tests/TestResults/coverage. \
-            /p:MergeWith=Bank/Bank.WebApi.Tests/TestResults/coverage.json
+            /p:CoverletOutputFormat="opencover,cobertura" \
+            /p:CoverletOutput=Bank/Bank.WebApi.Tests/TestResults/coverage
 
       # 🔍 6. Analizar con SonarCloud
       - name: SonarCloud Scan
@@ -62,9 +61,8 @@ jobs:
             -Dsonar.projectKey=dennisdhm7_lab-2025-ii-si784-u1-03-csharp-dennisdhm7
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.cs.opencover.reportsPaths=Bank/Bank.WebApi.Tests/TestResults/coverage.opencover.xml
-            -Dsonar.coverageReportPaths=Bank/Bank.WebApi.Tests/TestResults/coverage.cobertura.xml
 
-      # 📦 7. Empaquetar librería NuGet
+      # 📦 7. Empaquetar librería NuGet (solo el proyecto de dominio)
       - name: Pack NuGet Package
         run: dotnet pack Bank/Bank.WebApi/Bank.WebApi.csproj -c Release -o out --no-build
 
