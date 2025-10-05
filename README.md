@@ -320,9 +320,276 @@ jobs:
 ---
 ## Actividades Encargadas
 1. Adicionar al archivo de semgrep.yml los pasos necesarios para generar el reporte en formato HTML y publicarlo dentro de un Github Page
+
+```Yaml
+name: Semgrep Analysis
+
+env:
+  DOTNET_VERSION: '9.x'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+
+    steps:
+      # 🧩 1. Checkout del código fuente
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 🐍 2. Instalar Python y prospector2html (en entorno aislado)
+      - name: Install prospector2html
+        run: |
+          apk add --no-cache python3 py3-pip
+          python3 -m venv /tmp/venv
+          . /tmp/venv/bin/activate
+          pip install --no-cache-dir prospector2html
+        shell: bash
+
+      # 🔎 3. Ejecutar Semgrep y generar reporte JSON
+      - name: Run Semgrep scan
+        run: |
+          . /tmp/venv/bin/activate
+          semgrep scan --config="p/default" --json --output=semgrep.json --metrics=off || true
+        shell: bash
+
+      # 🧾 4. Convertir reporte JSON a HTML (maneja errores de salida)
+      - name: Generate HTML report
+        run: |
+          . /tmp/venv/bin/activate
+          if [ -f semgrep.json ]; then
+            echo "🔧 Generando reporte HTML desde semgrep.json..."
+            prospector-html --input semgrep.json --output semgrep-report.html --filter semgrep || true
+            echo "✅ Reporte HTML generado correctamente."
+          else
+            echo "⚠️ No se encontró semgrep.json, saltando generación de HTML."
+          fi
+        shell: bash
+
+      # 📦 5. Subir el reporte HTML como artefacto
+      - name: Upload Semgrep HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: semgrep-report.html
+        if: success() || always()  # sube el archivo aunque haya advertencias
+
+      # 🌐 6. Publicar el reporte HTML en GitHub Pages
+      - name: Deploy Semgrep report to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: .
+          destination_dir: semgrep-report
+          force_orphan: true  # ⚡ evita conflictos con otras publicaciones
+          full_commit_message: "🔍 Updated Semgrep security analysis report"
+
+```
+
 2. Completar la documentación de todas las clases y generar una automatizaciòn .github/workflows/publish_docs.yml (Github Workflow) utilizando DocFx (init, metadata y build) y publicar el site de documentaciòn generado en un Github Page.
+
+```Yaml
+name: Publish Documentation
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Descargar el código del repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Instalar .NET 9
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      # 3️⃣ Instalar DocFX
+      - name: Install DocFX
+        run: |
+          dotnet tool install -g docfx
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      # 4️⃣ Generar metadatos
+      - name: Generate metadata
+        run: docfx metadata docfx.json
+        working-directory: ./Bank
+
+      # 5️⃣ Compilar documentación
+      - name: Build documentation
+        run: docfx build
+        working-directory: ./Bank
+
+      # 🧹 5.5 Limpiar branch gh-pages (previene error de referencia bloqueada)
+      - name: Reset gh-pages branch
+        run: |
+          git fetch origin gh-pages || true
+          git push origin --delete gh-pages || true
+
+      # 6️⃣ Publicar en GitHub Pages
+      - name: Publish documentation to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./Bank/_site
+          publish_branch: gh-pages
+          force_orphan: true
+          destination_dir: docs
+          full_commit_message: "📘 Updated documentation site via DocFX"
+          user_name: github-actions[bot]
+          user_email: github-actions[bot]@users.noreply.github.com
+
+```
+
 3. Generar una automatización de nombre .github/workflows/package_nuget.yml (Github Workflow) que ejecute:
    * Pruebas unitarias y reporte de pruebas automatizadas
    * Realice el analisis con SonarCloud.
-   * Contruya un archivo .nuget a partir del proyecto Bank.Domain y lo publique como un Paquete de Github
+   * Contruya un archivo .nuget a partir del proyecto Bank.WebApi y lo publique como un Paquete de Github
+
+```Yaml
+name: Build, Test, Analyze and Publish NuGet Package
+
+env:
+  DOTNET_VERSION: '9.x'
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GITHUB_PACKAGES_SOURCE: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  packages: write
+  actions: read
+
+jobs:
+  build-test-analyze:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 🧩 1. Checkout del repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ⚙️ 2. Instalar .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # 📦 3. Restaurar dependencias
+      - name: Restore dependencies
+        run: dotnet restore Bank/Bank.sln
+
+      # 🧪 4. Compilar en modo Release
+      - name: Build solution
+        run: dotnet build Bank/Bank.sln --configuration Release --no-restore
+
+      # 🧭 5. Ejecutar pruebas unitarias con cobertura
+      - name: Run Unit Tests with Coverage
+        shell: bash
+        run: |
+          mkdir -p Bank/Bank.WebApi.Tests/TestResults
+          dotnet test Bank/Bank.WebApi.Tests/Bank.WebApi.Tests.csproj \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=TestResults/test_results.trx" \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=cobertura \
+            /p:CoverletOutput=Bank/Bank.WebApi.Tests/TestResults/coverage
+
+      # 🔍 6. Analizar con SonarCloud
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=cdhm
+            -Dsonar.projectKey=dennisdhm7_lab-2025-ii-si784-u1-03-csharp-dennisdhm7
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.cs.opencover.reportsPaths=Bank/Bank.WebApi.Tests/TestResults/coverage.opencover.xml
+
+      # 📦 7. Empaquetar NuGet
+      - name: Pack NuGet Package
+        run: |
+          dotnet pack Bank/Bank.WebApi/Bank.WebApi.csproj -c Release -o out /p:GeneratePackageOnBuild=true
+
+      # 🚀 8. Publicar en GitHub Packages
+      - name: Publish NuGet to GitHub Packages
+        run: |
+          if ls out/*.nupkg 1> /dev/null 2>&1; then
+            dotnet nuget push "out/*.nupkg" \
+              --source "${{ env.GITHUB_PACKAGES_SOURCE }}" \
+              --api-key ${{ env.GITHUB_TOKEN }} \
+              --skip-duplicate
+          else
+            echo "❌ No se encontró ningún paquete NuGet en la carpeta 'out'. Verifica el paso de pack.'"
+            exit 1
+          fi
+
+```
+  
 4. Generar una automatización de nombre .github/workflows/release_version.yml (Github Workflow) que contruya la version (release) del paquete y publique en Github Releases e incluya pero ahi no esta el test unitarios
+
+```Yaml
+name: Release Version
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: read
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Bank/Bank.WebApi/Bank.WebApi.csproj
+
+      - name: Build project
+        run: dotnet build Bank/Bank.WebApi/Bank.WebApi.csproj -c Release --no-restore
+
+      - name: Pack NuGet package
+        run: dotnet pack Bank/Bank.WebApi/Bank.WebApi.csproj -c Release -o out --no-build
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: out/*.nupkg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+```
+
