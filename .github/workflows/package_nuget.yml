@@ -58,8 +58,8 @@ jobs:
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
         with:
           args: >
-            -Dsonar.organization=dennisdhm7
-            -Dsonar.projectKey=dennisdhm7_BankApp
+            -Dsonar.organization=cdhm
+            -Dsonar.projectKey=dennisdhm7_lab-2025-ii-si784-u1-03-csharp-dennisdhm7
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.coverageReportPaths=Bank/Bank.WebApi.Tests/TestResults/coverage.cobertura.xml
 
