@@ -63,18 +63,20 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.cs.opencover.reportsPaths=Bank/Bank.WebApi.Tests/TestResults/coverage.opencover.xml
 
-      # 📦 7. Empaquetar librería NuGet (solo el proyecto de dominio)
-      - name: Publish NuGet to GitHub Packages
+      # 📦 7. Empaquetar NuGet
+      - name: Pack NuGet Package
         run: |
-          dotnet nuget push "out/*.nupkg" \
-            --source "${{ env.GITHUB_PACKAGES_SOURCE }}" \
-            --api-key ${{ env.GITHUB_TOKEN }} \
-            --skip-duplicate
+          dotnet pack Bank/Bank.WebApi/Bank.WebApi.csproj -c Release -o out /p:GeneratePackageOnBuild=true
 
-      # 🚀 8. Publicar en GitHub Packages (maneja duplicados y autenticación)
+      # 🚀 8. Publicar en GitHub Packages
       - name: Publish NuGet to GitHub Packages
         run: |
-          dotnet nuget push "out/*.nupkg" \
-            --source "${{ env.GITHUB_PACKAGES_SOURCE }}" \
-            --api-key ${{ env.GITHUB_TOKEN }} \
-            --skip-duplicate
+          if ls out/*.nupkg 1> /dev/null 2>&1; then
+            dotnet nuget push "out/*.nupkg" \
+              --source "${{ env.GITHUB_PACKAGES_SOURCE }}" \
+              --api-key ${{ env.GITHUB_TOKEN }} \
+              --skip-duplicate
+          else
+            echo "❌ No se encontró ningún paquete NuGet en la carpeta 'out'. Verifica el paso de pack.'"
+            exit 1
+          fi
