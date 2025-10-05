@@ -1,28 +1,40 @@
 name: Release Version
+
 on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: read
 
 jobs:
-  release:
+  create-release:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.x'
 
-      - name: Build project
-        run: dotnet build Bank/Bank.WebApi.sln -c Release
+      - name: Restore dependencies
+        run: dotnet restore Bank/Bank.WebApi/Bank.WebApi.csproj
 
-      - name: Create Release
+      - name: Build project
+        run: dotnet build Bank/Bank.WebApi/Bank.WebApi.csproj -c Release --no-restore
+
+      - name: Pack NuGet package
+        run: dotnet pack Bank/Bank.WebApi/Bank.WebApi.csproj -c Release -o out --no-build
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release ${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
-          generate_release_notes: true
+          files: out/*.nupkg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
