@@ -48,8 +48,8 @@ jobs:
             --configuration Release \
             --logger "trx;LogFileName=TestResults/test_results.trx" \
             /p:CollectCoverage=true \
-            /p:CoverletOutputFormat="cobertura;opencover" \
-            /p:CoverletOutput="Bank/Bank.WebApi.Tests/TestResults/coverage"
+            /p:CoverletOutputFormat=cobertura \
+            /p:CoverletOutput=Bank/Bank.WebApi.Tests/TestResults/coverage
 
       # 🔍 6. Analizar con SonarCloud
       - name: SonarCloud Scan
